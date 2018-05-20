@@ -144,6 +144,77 @@ class FreeCellProblem(Problem):
             tableau.add(col)
         return tableau
 
+    def _add_card_to_col(self, tableau, col, card):
+        """Add a card to a column.
+
+        :param tableau: the set of columns
+        :type tableau: set or frozenset
+        :param col: a column
+        :type col: string
+        :param card: a card
+        :type card: string
+        """
+        if isinstance(tableau, frozenset):
+            tableau = set(tableau)
+        tableau.remove(col)
+        col += card
+        tableau.add(col)
+        return tableau
+
+    def _add_card_to_new_pile(self, tableau, card):
+        """Put this card in a new pile.
+
+        :param tableau: the set of columns
+        :type tableau: frozenset or set
+        :param card: a card
+        :type card: string
+
+        This returns the modified tableau. 
+        i.e.
+            If tableau is a frozenset, this will return a new set.
+            If tableau is a set, this will return it.
+        """
+        if isinstance(tableau, frozenset):
+            tableau = set(tableau)
+        tableau.add(card)
+        return tableau
+
+    def _add_card_to_free(self, freecells, card):
+        """Add this card to a free cell.
+
+        :param freecells: the free cells
+        :type freecells: set or frozenset
+        :param card: a card
+        :type card: string
+
+        This returns the modified freecells. 
+        i.e.
+            If freecells is a frozenset, this will return a new set.
+            If freecells is a set, this will return it.
+        """
+        if isinstance(freecells, frozenset):
+            freecells = set(freecells)
+        freecells.add(card)
+        return freecells
+
+    def _remove_card_from_free(self, freecells, card):
+        """Remove this card from the free cells.
+
+        :param freecells: the free cells
+        :type freecells: set or frozenset
+        :param card: a card
+        :type card: string
+
+        This returns the modified freecells. 
+        i.e.
+            If freecells is a frozenset, this will return a new set.
+            If freecells is a set, this will return it.
+        """
+        if isinstance(freecells, frozenset):
+            freecells = set(freecells)
+        freecells.remove(card)
+        return freecells              
+
     def neighbors(self, state):
         """Return a list of states that can be reached from this state."""
         # Available home cells
