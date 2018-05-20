@@ -109,15 +109,6 @@ class FreeCellProblem(Problem):
         """Return a list of states that can be reached from this state."""
         return [] #TODO
 
-    def _available_home_cells(self, state):
-        """Return a dictionary mapping a card to an integer suit."""
-        rtn = {}
-        for suit_num, suit_str in enumerate(self._suit_lst):
-            rank = state[suit_num]
-            if rank < _MAX_RANK:
-                rtn['%s%s' % (self._rank_lst[rank+1], suit_str)] = suit_num
-        return rtn
-
     def move_description(self, from_state, to_state):
         """Return a string describing the transition between the two states.
 
