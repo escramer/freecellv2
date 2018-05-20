@@ -123,20 +123,41 @@ class FreeCellProblem(Problem):
         """
         return card[0] == need[0] and self._is_red(card[1]) == need[1]
 
+    def _remove_card_from_col(self, tableau, col):
+        """Remove a card from the column.
+
+        :param tableau: the set of columns
+        :type tableau: frozenset or set
+        :param col: the column
+        :type col: string
+
+        This returns the modified tableau. 
+        i.e.
+            If tableau is a frozenset, this will return a new set.
+            If tableau is a set, this will return it.
+        """
+        if isinstance(tableau, frozenset):
+            tableau = set(tableau)
+        tableau.remove(col)
+        col = col[:-2]
+        if col:
+            tableau.add(col)
+        return tableau
+
     def neighbors(self, state):
         """Return a list of states that can be reached from this state."""
         # Available home cells
-        av_home_cards = set()
+        av_home = set()
         for suit_ndx in xrange(4):
             rank = state[suit_ndx]
             if rank > 0:
-                av_home_cards.add((rank, suit_ndx))
+                av_home.add((rank, suit_ndx))
 
         # Needed home_cells
-        needed_home_cards = {(rank+1, suit) for rank, suit in av_home_cards if rank < _MAX_RANK}
+        needed_home = {(rank+1, suit) for rank, suit in av_home if rank < _MAX_RANK}
 
         # Free cells
-        free_cards = {self._card_tup(card) for card in state[4]}
+        free = {self._card_tup(card) for card in state[4]}
 
         # Available and needed tableau cards
         av_tab = {} # Maps a card to its pile
