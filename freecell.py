@@ -61,6 +61,7 @@ class FreeCellProblem(Problem):
             'Q': 12,
             'K': 13
         }
+        self._rank_lst = (None, 'A', '2', '3', '4', '5', '6', '7', '8', '9', 'T', 'J', 'Q', 'K')
         self._suit_lst = ('D', 'H', 'C', 'S')
         self._suit_map = {suit_str: ndx for ndx, suit_str in enumerate(self._suit_lst)}
                 
@@ -108,6 +109,15 @@ class FreeCellProblem(Problem):
         return self._tab_to_home(state) + self._tab_to_free(state) + self._tab_to_tab(state) + \
          self._free_to_home(state) + self._free_to_tab(state) + self._home_to_tab(state) + \
          self._home_to_free(state)
+
+    def _available_home_cells(self, state):
+        """Return a dictionary mapping a card to an integer suit."""
+        rtn = {}
+        for suit_num, suit_str in enumerate(self._suit_lst):
+            rank = state[suit_num]
+            if rank < _MAX_RANK:
+                rtn['%s%s' % (self._rank_lst[rank+1], suit_str)] = suit_num
+        return rtn
 
     def _tab_to_home(self, state):
         """Return the list of neighbor states where a card is moved from the tableau to home."""
