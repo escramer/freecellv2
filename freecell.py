@@ -64,6 +64,7 @@ class FreeCellProblem(Problem):
         self._rank_lst = (None, 'A', '2', '3', '4', '5', '6', '7', '8', '9', 'T', 'J', 'Q', 'K')
         self._suit_lst = ('D', 'H', 'C', 'S')
         self._suit_map = {suit_str: ndx for ndx, suit_str in enumerate(self._suit_lst)}
+        self._red_suits = (self._is_red(suit) for suit in self._suit_lst)
                 
     def _deck(self):
         """Return the set of all cards."""
@@ -79,10 +80,10 @@ class FreeCellProblem(Problem):
     def _is_red(self, suit):
         """Return whether or not the suit is red.
 
-        :param suit: 'C', 'D', 'H', or 'S'
-        :type suit: string
+        :param suit: the suit
+        :type suit: string or int
         """
-        return suit in ('D', 'H')
+        return suit in ('D', 'H') if isinstance(suit, str) else self._red_suits[suit]
 
     def _int_rank(self, str_rank):
         """Return the rank as an integer.
