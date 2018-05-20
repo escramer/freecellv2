@@ -54,9 +54,17 @@ class FreeCellProblem(Problem):
             raise ValueError('Missing cards: %s' % deck)
 
         self._init_state = (0, 0, 0, 0, frozenset(), frozenset(tableau))
+        self._rank_map = {
+            'A': 1,
+            'T': 10,
+            'J': 11,
+            'Q': 12,
+            'K': 13
+        }
+        self._suit_lst = ('D', 'H', 'C', 'S')
+        self._suit_map = {suit_str: ndx for ndx, suit_str in enumerate(self._suit_lst)}
                 
-    @staticmethod
-    def _deck():
+    def _deck(self):
         """Return the set of all cards."""
         rtn = set()
         ranks = ['A', 'T', 'J', 'Q', 'K']
@@ -66,6 +74,23 @@ class FreeCellProblem(Problem):
             for rank in ranks:
                 rtn.add('%s%s' % (rank, suit))
         return rtn
+
+    def _is_red(self, suit):
+        """Return whether or not the suit is red.
+
+        :param suit: 'C', 'D', 'H', or 'S'
+        :type suit: string
+        """
+        return suit in ('D', 'H')
+
+    def _rank(self, str_rank):
+        """Return the rank as an integer.
+
+        :param str_rank: the rank as a string
+        :type string
+        """
+        rtn = self._rank_map.get(str_rank)
+        return int(str_rank) if rtn is None else rtn
 
     def initial_state(self):
         """Return the initial state."""
