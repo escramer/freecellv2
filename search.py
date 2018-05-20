@@ -4,6 +4,9 @@ See https://en.wikipedia.org/wiki/A*_search_algorithm
 """
 
 from collections import deque
+from heapq import heappush, heappop
+
+_INFINITY = float('inf')
 
 
 class _OpenSet(object):
@@ -76,17 +79,36 @@ class _PriorityQueue(_OpenSet):
         :param heuristic: the heuristic function that maps a state to an integer
         :type heuristic: function
         """
-        pass #TODO
+        self._heuristic = heuristic
+        self._heap = []
+        self._g_score = {}
+        self._last_g_score = None # g score of the last state returned from pop
 
     def push(self, state):
-        pass #TODO
+        """Put this state in this priority queue. Return whether or not it can push.
+
+        Its parent is assumed to be the last state returned from pop.
+        """
+        if self._last_g_score is None:
+            g_score = 0
+        else:
+            g_score = self._last_g_score + 1
+            if g_score >= self._g_score.get(state, _INFINITY):
+                return False
+
+        self._g_score[state] = g_score
+        heappush((g_score + self._heuristic(state), state))
+
 
     def pop(self):
-        return None #TODO
+        """Remove and return a state."""
+        rtn = heappop(self._heap)[1]
+        self._last_g_score = self._g_score[rtn]
+        return rtn
 
     def empty(self):
         """Return whether or not the priority queue is empty."""
-        return False #TODO
+        return len(self._heap) == 0
 
 
 class Problem(object):
