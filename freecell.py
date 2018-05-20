@@ -84,7 +84,7 @@ class FreeCellProblem(Problem):
         """
         return suit in ('D', 'H')
 
-    def _rank(self, str_rank):
+    def _int_rank(self, str_rank):
         """Return the rank as an integer.
 
         :param str_rank: the rank as a string
