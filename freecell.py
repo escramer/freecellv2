@@ -40,6 +40,9 @@ class FreeCellProblem(Problem):
         tableau = set()
         with open(filename) as file_obj:
             for row in csv.reader(file_obj):
+                # Ignore commented rows
+                if not row or not row[0] or row[0].isspace() or row[0][0] == '#':
+                    continue
                 column = ''
                 for card in row:
                     card = card.upper()
