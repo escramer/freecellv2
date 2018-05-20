@@ -94,6 +94,14 @@ class FreeCellProblem(Problem):
         rtn = self._rank_map.get(str_rank)
         return int(str_rank) if rtn is None else rtn
 
+    def _card_tup(self, card_str):
+        """Return a (rank, suit) tuple (both integers) representing this card.
+
+        :param card_str: a card
+        :type card_str: string
+        """
+        return (self._int_rank(card_str[0]), self._suit_map[card_str[1]])
+
     def initial_state(self):
         """Return the initial state."""
         return self._init_state
@@ -105,9 +113,43 @@ class FreeCellProblem(Problem):
                 return False
         return True
 
+    def _is_suitable(self, card, need):
+        """Return whether or not this card has the matching rank and suit.
+
+        :param card: a (rank, suit) tuple (both integers)
+        :type card: tuple
+        :param need: a (rank, is_red) tuple
+        :type need: tuple
+        """
+        return card[0] == need[0] and self._is_red(card[1]) == need[1]
+
     def neighbors(self, state):
         """Return a list of states that can be reached from this state."""
+        # Available home cells
+        av_home_cards = set()
+        for suit_ndx in xrange(4):
+            rank = state[suit_ndx]
+            if rank > 0:
+                av_home_cards.add((rank, suit_ndx))
+
+        # Needed home_cells
+        needed_home_cards = {(rank+1, suit) for rank, suit in av_home_cards if rank < _MAX_RANK}
+
+        # Free cells
+        free_cards = {self._card_tup(card) for card in state[4]}
+
+        # Available and needed tableau cards
+        av_tab = {} # Maps a card to its pile
+        needed_tab = {} # Maps a needed (rank, is_red) tuple to its pile
+        for col in state[5]:
+            av_card = self._card_tup(col[-2:])
+            av_tab[av_card] = col
+            if av_card[0] > 1:
+                 needed_tab[(av_card[0] - 1, av_card[1])] = col
+
         return [] #TODO
+
+
 
     def move_description(self, from_state, to_state):
         """Return a string describing the transition between the two states.
