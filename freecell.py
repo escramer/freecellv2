@@ -106,9 +106,7 @@ class FreeCellProblem(Problem):
 
     def neighbors(self, state):
         """Return a list of states that can be reached from this state."""
-        return self._tab_to_home(state) + self._tab_to_free(state) + self._tab_to_tab(state) + \
-         self._free_to_home(state) + self._free_to_tab(state) + self._home_to_tab(state) + \
-         self._home_to_free(state)
+        return [] #TODO
 
     def _available_home_cells(self, state):
         """Return a dictionary mapping a card to an integer suit."""
@@ -118,46 +116,6 @@ class FreeCellProblem(Problem):
             if rank < _MAX_RANK:
                 rtn['%s%s' % (self._rank_lst[rank+1], suit_str)] = suit_num
         return rtn
-
-    def _tab_to_home(self, state):
-        """Return the list of neighbor states where a card is moved from the tableau to home."""
-        return [] #TODO
-
-    def _tab_to_free(self, state):
-        """
-        Return the list of neighbor states where a card is moved from the tableau to a free
-        cell.
-        """
-        return [] #TODO
-
-    def _tab_to_tab(self, state):
-        """Return the list of neighbor states where a card is moved within the tableau."""
-        return [] #TODO
-
-    def _free_to_home(self, state):
-        """
-        Return the list of neighbor states where a card is moved from a
-        free cell to a home cell.
-        """
-        return [] #TODO
-
-    def _free_to_tab(self, state):
-        """Return the list of neighbor states where a card is moved from a
-        free cell to the tableau.
-        """
-        return [] #TODO
-
-    def _home_to_tab(self, state):
-        """Return the list of neighbor states where a card is moved from a
-        home cell to the tableau.
-        """
-        return [] #TODO
-
-    def _home_to_free(self, state):
-        """Return the list of neighbor states where a card is moved from a
-        home cell to a free cell.
-        """
-        return [] #TODO
 
     def move_description(self, from_state, to_state):
         """Return a string describing the transition between the two states.
