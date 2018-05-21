@@ -183,37 +183,29 @@ class FreeCellProblem(Problem):
         """Add this card to a free cell.
 
         :param freecells: the free cells
-        :type freecells: set or frozenset
+        :type freecells: frozenset
         :param card: a card
         :type card: string
 
-        This returns the modified freecells. 
-        i.e.
-            If freecells is a frozenset, this will return a new set.
-            If freecells is a set, this will return it.
+        This returns freecells as a new frozenset.
         """
-        if isinstance(freecells, frozenset):
-            freecells = set(freecells)
+        freecells = set(freecells)
         freecells.add(card)
-        return freecells
+        return frozenset(freecells)
 
     def _remove_card_from_free(self, freecells, card):
         """Remove this card from the free cells.
 
         :param freecells: the free cells
-        :type freecells: set or frozenset
+        :type freecells: frozenset
         :param card: a card
         :type card: string
 
-        This returns the modified freecells. 
-        i.e.
-            If freecells is a frozenset, this will return a new set.
-            If freecells is a set, this will return it.
+        This returns freecells as a new frozenset.
         """
-        if isinstance(freecells, frozenset):
-            freecells = set(freecells)
+        freecells = set(freecells)
         freecells.remove(card)
-        return freecells              
+        return frozenset(freecells)            
 
     def neighbors(self, state):
         """Return a list of states that can be reached from this state."""
