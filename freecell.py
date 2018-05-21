@@ -8,6 +8,7 @@ import csv
 from search import Problem, astar, dfs
 
 _MAX_RANK = 13
+_MAX_COLS = 8
 
 
 class FreeCellProblem(Problem):
@@ -102,6 +103,14 @@ class FreeCellProblem(Problem):
         """
         return (self._int_rank(card_str[0]), self._suit_map[card_str[1]])
 
+    def _card_str(self, card_tup):
+        """Return the card as a string.
+
+        :param card_tup: a (rank, suit) tuple (both integers)
+        :type card_tup: tuple
+        """
+        return '%s%s' % (self._int_rank(card_tup[0]), self._suit_lst[card_tup[1]])
+
     def initial_state(self):
         """Return the initial state."""
         return self._init_state
@@ -113,7 +122,7 @@ class FreeCellProblem(Problem):
                 return False
         return True
 
-    def _is_suitable(self, card, need):
+    def _meets_need(self, card, need):
         """Return whether or not this card has the matching rank and suit.
 
         :param card: a (rank, suit) tuple (both integers)
@@ -153,6 +162,11 @@ class FreeCellProblem(Problem):
         :type col: string
         :param card: a card
         :type card: string
+
+        This returns the modified tableau. 
+        i.e.
+            If tableau is a frozenset, this will return a new set.
+            If tableau is a set, this will return it.
         """
         if isinstance(tableau, frozenset):
             tableau = set(tableau)
@@ -161,8 +175,8 @@ class FreeCellProblem(Problem):
         tableau.add(col)
         return tableau
 
-    def _add_card_to_new_pile(self, tableau, card):
-        """Put this card in a new pile.
+    def _add_card_to_new_col(self, tableau, card):
+        """Put this card in a new column.
 
         :param tableau: the set of columns
         :type tableau: frozenset or set
@@ -205,7 +219,29 @@ class FreeCellProblem(Problem):
         """
         freecells = set(freecells)
         freecells.remove(card)
-        return frozenset(freecells)            
+        return frozenset(freecells)
+
+    def _to_tab(self, tab, needed_tab, card):
+        """Return a list of tableaus resulting from putting this card in the tableau
+        from outside the tableau.
+
+        :param tab: a tableau
+        :type tab: frozenset
+        :param needed_tab: maps a (rank, is_red) tuple (card that's needed) to its column
+        :type needed_tab: dict
+        :param card: a (rank, suit) tuple
+        :type card: tuple
+
+        The new tableaus will be frozensets.
+        """
+        rtn = []
+        card_str = self._card_str(card)
+        if len(tab) < _MAX_COLS:
+            rtn.append(frozenset(self._add_card_to_new_col(tab, card_str)))
+        for need, col in needed_tab.iteritems():
+            if self._meets_need(card, need):
+                rtn.append(frozenset(self._add_card_to_col(tab, col, card_str)))
+        return rtn
 
     def neighbors(self, state):
         """Return a list of states that can be reached from this state."""
@@ -232,8 +268,6 @@ class FreeCellProblem(Problem):
                  needed_tab[(av_card[0] - 1, av_card[1])] = col
 
         return [] #TODO
-
-
 
     def move_description(self, from_state, to_state):
         """Return a string describing the transition between the two states.
