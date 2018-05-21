@@ -221,6 +221,23 @@ class FreeCellProblem(Problem):
         freecells.remove(card)
         return frozenset(freecells)
 
+    def _to_home(self, state, needed_home, card):
+        """Return a tuple of the 4 home cells as a result of adding this card to home.
+        If the card cannot be added, return None.
+
+        :param needed_home: a set of cards needed (each card is a (rank, suit) tuple)
+        :type needed_home: set
+        :param card: a (rank, suit) tuple (both integers)
+        :type card: tuple
+        """
+        if card in needed_home:
+            home = list(state[:4])
+            home[card[1]] = card[0]
+            return tuple(home)
+        else:
+            return None
+
+
     def _to_tab(self, tab, needed_tab, card):
         """Return a list of tableaus resulting from putting this card in the tableau
         from outside the tableau.
