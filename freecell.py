@@ -286,6 +286,27 @@ class FreeCellProblem(Problem):
                     rtn.append(frozenset(new_tab))
         return rtn
 
+    def _new_state(self, state, home=None, free=None, tab=None):
+        """Return a new state with some modifications.
+
+        If any of the options are not None, they will appear in the new state. Otherwise,
+        whatever's in "state" will appear in the new state.
+        
+        :param home: the home cells
+        :type home: tuple
+        :param free: the free cells
+        :type free: frozenset
+        :param tab: the tableau
+        :type tab: frozenset
+        """
+        if home is None:
+            home = state[:4]
+        if free is None:
+            free = state[4]
+        if tab is None:
+            tab = state[5]
+        return home + (free, tab)
+
     def neighbors(self, state):
         """Return a list of states that can be reached from this state."""
         # Available home cells
@@ -311,6 +332,7 @@ class FreeCellProblem(Problem):
                  needed_tab[(av_card[0] - 1, av_card[1])] = col
 
         return [] #TODO
+
 
     def move_description(self, from_state, to_state):
         """Return a string describing the transition between the two states.
