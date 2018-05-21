@@ -1,4 +1,4 @@
-"""Depth first search and A-Star
+"""Depth first search, breadth first search, and A*
 
 See https://en.wikipedia.org/wiki/A*_search_algorithm
 """
