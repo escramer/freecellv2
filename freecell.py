@@ -243,6 +243,32 @@ class FreeCellProblem(Problem):
                 rtn.append(frozenset(self._add_card_to_col(tab, col, card_str)))
         return rtn
 
+    def _within_tab(self, tab, needed_tab, av_tab):
+        """Return a list of tableaus resulting from moving a card within the tableau.
+
+        :param tab: a tableau
+        :type tab: frozenset
+        :param needed_tab: maps a (rank, is_red) tuple (card that's needed) to its column
+        :type needed_tab: dict
+        :param av_tab: maps available (rank, suit) tuples to their column
+        :type av_tab: dict
+
+        The new tableaus will be frozensets.
+        """
+        rtn = []
+        for av_card, from_col in av_tab.iteritems():
+            av_card_str = self._card_str(av_card)
+            if len(from_col) > 2 and len(tab) < _MAX_COLS:
+                new_tab = self._remove_card_from_col(tab, from_col)
+                new_tab = self._add_card_to_new_col(new_tab, av_card_str)
+                rtn.append(frozenset(new_tab))
+            for need, to_col in needed_tab.iteritems():
+                if self._meets_need(av_card, need):
+                    new_tab = self._remove_card_from_col(tab, from_col)
+                    new_tab = self._add_card_to_col(new_tab, to_col, av_card_str)
+                    rtn.append(frozenset(new_tab))
+        return rtn
+
     def neighbors(self, state):
         """Return a list of states that can be reached from this state."""
         # Available home cells
