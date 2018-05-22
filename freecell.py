@@ -438,6 +438,40 @@ class FreeCellProblem(Problem):
 
         raise ValueError('Unable to find the right move')
 
+    def display(self, state):
+        """Display this state in a nice way."""
+        # First row
+        gap = 4 # Number of spaces between free and home cells
+        row = '|'
+        for card in sorted(state[4]):
+            row += card + '|'
+        for _ in range(4 - len(state[4])):
+            row += '  |'
+        row += ' ' * gap + '|'
+        for ndx in xrange(4):
+            home_rank = state[ndx]
+            if home_rank == 0:
+                row += '  '
+            else:
+                row += self._card_str((home_rank, ndx))
+            row += '|'
+        print row
+
+        # Second row
+        print '+--+--+--+--+' + '-' * gap + '+--+--+--+--+'
+
+        # Tableau
+        max_len = max(len(col) for col in state[5]) / 2
+        for ndx in xrange(max_len):
+            row = ''
+            for col in sorted(state[5]):
+                if ndx * 2 < len(col):
+                    card = col[ndx*2:ndx*2+2]
+                else:
+                    card = '  '
+                row += card + '  '
+            print row
+
 
 def heuristic(state):
     """Return the heuristic."""
