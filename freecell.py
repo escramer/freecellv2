@@ -337,7 +337,11 @@ class FreeCellProblem(Problem):
                 av_home.add((rank, suit_ndx))
 
         # Needed home_cells
-        needed_home = {(rank+1, suit) for rank, suit in av_home if rank < _MAX_RANK}
+        needed_home = set()
+        for suit in xrange(4):
+            rank = state[suit]
+            if rank < _MAX_RANK:
+                needed_home.add((rank+1, suit))
 
         # Free cells
         free = {self._card_tup(card) for card in state[4]}
