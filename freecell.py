@@ -479,7 +479,23 @@ class FreeCellProblem(Problem):
 
 def heuristic(state):
     """Return the heuristic."""
-    return _DECK_SIZE - sum(state[:4])
+    # Imagine you have an infinite number of free cells.
+    #
+    # The idea is this:
+    #  For a card c in the tableau, it must go to a free cell if there is a card with
+    #  the same suit deeper in the column with a lower rank.
+    rtn = len(state[4])
+    for col in state[5]:
+        min_cards = {suit: _MAX_RANK for suit in ['S', 'C', 'D', 'H']}
+        for ndx in xrange(0, len(col), 2):
+            rank = self._int_rank(col[ndx])
+            suit = col[ndx+1]
+            if min_cards[suit] < rank:
+                rtn += 1
+            else:
+                rtn += 2
+                min_cards[suit] = rank
+    return rtn
 
 
 def main():
