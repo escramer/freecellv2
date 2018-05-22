@@ -13,6 +13,50 @@ _MAX_FREE_CELLS = 4
 _DECK_SIZE = 52
 
 
+class Card:
+    """Container for helper functions on cards."""
+
+    _rank_lst = (None, 'A', '2', '3', '4', '5', '6', '7', '8', '9', 'T', 'J', 'Q', 'K')
+    _rank_map = {rank_str: ndx for ndx, rank_str in enumerate(_rank_lst) if rank_str is not None}
+
+    @staticmethod
+    def is_red(suit):
+        """Return whether or not this suit is red.
+
+        :param suit: the suit
+        :type suit: string
+        """
+        return suit in ('D', 'H')
+
+    @classmethod
+    def int_rank(cls, str_rank):
+        """Return the integer rank of this string.
+
+        :param str_rank: the rank
+        :type str_rank: string
+        """
+        return cls._rank_map[str_rank]
+
+    @classmethod
+    def str_rank(cls, int_rank):
+        """Return the rank as a string.
+
+        :param int_rank: the rank
+        :type int_rank: integer
+        """
+        return cls._rank_lst[int_rank]
+
+    @classmethod
+    def deck(cls):
+        """Return a deck of cards as strings."""
+        rtn = set()
+        for suit in ('D', 'H', 'S', 'C'):
+            for rank in cls._rank_lst[1:]:
+                rtn.add('%s%s' % (rank, suit))
+        return rtn
+
+
+
 class FreeCellProblem(Problem):
     """A FreeCell problem
 
@@ -39,7 +83,7 @@ class FreeCellProblem(Problem):
         :param filename: the name of the csv file
         :type filename: string
         """
-        deck = self._deck()
+        deck = Card.deck()
         tableau = set()
         with open(filename) as file_obj:
             for row in csv.reader(file_obj):
@@ -57,29 +101,9 @@ class FreeCellProblem(Problem):
             raise ValueError('Missing cards: %s' % deck)
 
         self._init_state = (0, 0, 0, 0, frozenset(), frozenset(tableau))
-        self._rank_map = {
-            'A': 1,
-            'T': 10,
-            'J': 11,
-            'Q': 12,
-            'K': 13
-        }
-        self._rank_lst = (None, 'A', '2', '3', '4', '5', '6', '7', '8', '9', 'T', 'J', 'Q', 'K')
         self._suit_lst = ('D', 'H', 'C', 'S')
         self._suit_map = {suit_str: ndx for ndx, suit_str in enumerate(self._suit_lst)}
         self._red_suits = tuple(self._is_red(suit) for suit in self._suit_lst)
-                
-    @staticmethod
-    def _deck():
-        """Return the set of all cards."""
-        rtn = set()
-        ranks = ['A', 'T', 'J', 'Q', 'K']
-        for num in range(2, 10):
-            ranks.append(str(num))
-        for suit in 'SCHD':
-            for rank in ranks:
-                rtn.add('%s%s' % (rank, suit))
-        return rtn
 
     def _is_red(self, suit):
         """Return whether or not the suit is red.
@@ -87,16 +111,7 @@ class FreeCellProblem(Problem):
         :param suit: the suit
         :type suit: string or int
         """
-        return suit in ('D', 'H') if isinstance(suit, str) else self._red_suits[suit]
-
-    def _int_rank(self, str_rank):
-        """Return the rank as an integer.
-
-        :param str_rank: the rank as a string
-        :type string
-        """
-        rtn = self._rank_map.get(str_rank)
-        return int(str_rank) if rtn is None else rtn
+        return Card.is_red(suit) if isinstance(suit, str) else self._red_suits[suit]
 
     def _card_tup(self, card_str):
         """Return a (rank, suit) tuple (both integers) representing this card.
@@ -104,7 +119,7 @@ class FreeCellProblem(Problem):
         :param card_str: a card
         :type card_str: string
         """
-        return (self._int_rank(card_str[0]), self._suit_map[card_str[1]])
+        return (Card.int_rank(card_str[0]), self._suit_map[card_str[1]])
 
     def _card_str(self, card_tup):
         """Return the card as a string.
@@ -112,7 +127,7 @@ class FreeCellProblem(Problem):
         :param card_tup: a (rank, suit) tuple (both integers)
         :type card_tup: tuple
         """
-        return '%s%s' % (self._rank_lst[card_tup[0]], self._suit_lst[card_tup[1]])
+        return '%s%s' % (Card.str_rank(card_tup[0]), self._suit_lst[card_tup[1]])
 
     def initial_state(self):
         """Return the initial state."""
@@ -488,7 +503,7 @@ def heuristic(state):
     for col in state[5]:
         min_cards = {suit: _MAX_RANK for suit in ['S', 'C', 'D', 'H']}
         for ndx in xrange(0, len(col), 2):
-            rank = self._int_rank(col[ndx])
+            rank = Card.int_rank(col[ndx])
             suit = col[ndx+1]
             if min_cards[suit] < rank:
                 rtn += 2
