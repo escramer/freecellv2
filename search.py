@@ -141,6 +141,24 @@ class NoSolutionError(Exception):
     pass
 
 
+def _reconstruct_path(current, came_from, problem):
+    """Return a list of moves.
+
+    :param current: the final state
+    :type current: a state
+    :param came_from: maps a state to its parent
+    :type came_from: dict
+    :param problem: a problem
+    :type problem: Problem
+    """
+    rtn = []
+    while current in came_from:
+        parent = came_from[current]
+        rtn.append(problem.move_description(parent, current))
+        current = parent
+    return reversed(rtn)
+
+
 def _search(problem, open_set):
     """Return a list of moves from the start node to the end node.
 

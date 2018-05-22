@@ -68,7 +68,8 @@ class FreeCellProblem(Problem):
         self._suit_map = {suit_str: ndx for ndx, suit_str in enumerate(self._suit_lst)}
         self._red_suits = (self._is_red(suit) for suit in self._suit_lst)
                 
-    def _deck(self):
+    @staticmethod
+    def _deck():
         """Return the set of all cards."""
         rtn = set()
         ranks = ['A', 'T', 'J', 'Q', 'K']
@@ -133,7 +134,8 @@ class FreeCellProblem(Problem):
         """
         return card[0] == need[0] and self._is_red(card[1]) == need[1]
 
-    def _remove_card_from_col(self, tableau, col):
+    @staticmethod
+    def _remove_card_from_col(tableau, col):
         """Remove a card from the column.
 
         :param tableau: the set of columns
@@ -154,7 +156,8 @@ class FreeCellProblem(Problem):
             tableau.add(col)
         return tableau
 
-    def _add_card_to_col(self, tableau, col, card):
+    @staticmethod
+    def _add_card_to_col(tableau, col, card):
         """Add a card to a column.
 
         :param tableau: the set of columns
@@ -176,7 +179,8 @@ class FreeCellProblem(Problem):
         tableau.add(col)
         return tableau
 
-    def _add_card_to_new_col(self, tableau, card):
+    @staticmethod
+    def _add_card_to_new_col(tableau, card):
         """Put this card in a new column.
 
         :param tableau: the set of columns
@@ -194,7 +198,8 @@ class FreeCellProblem(Problem):
         tableau.add(card)
         return tableau
 
-    def _add_card_to_free(self, freecells, card):
+    @staticmethod
+    def _add_card_to_free(freecells, card):
         """Add this card to a free cell.
 
         :param freecells: the free cells
@@ -208,7 +213,8 @@ class FreeCellProblem(Problem):
         freecells.add(card)
         return frozenset(freecells)
 
-    def _remove_card_from_free(self, freecells, card):
+    @staticmethod
+    def _remove_card_from_free(freecells, card):
         """Remove this card from the free cells.
 
         :param freecells: the free cells
@@ -222,7 +228,8 @@ class FreeCellProblem(Problem):
         freecells.remove(card)
         return frozenset(freecells)
 
-    def _to_home(self, state, needed_home, card):
+    @staticmethod
+    def _to_home(state, needed_home, card):
         """Return a tuple of the 4 home cells as a result of adding this card to home.
         If the card cannot be added, return None.
 
@@ -238,7 +245,8 @@ class FreeCellProblem(Problem):
         else:
             return None
 
-    def _remove_from_home(self, state, card):
+    @staticmethod
+    def _remove_from_home(state, card):
         """Return a tuple of the 4 home cells as a result of removing this card.
 
         :param card: a (rank, suit) tuple (both integers)
@@ -296,7 +304,8 @@ class FreeCellProblem(Problem):
                     rtn.append(frozenset(new_tab))
         return rtn
 
-    def _new_state(self, state, home=None, free=None, tab=None):
+    @staticmethod
+    def _new_state(state, home=None, free=None, tab=None):
         """Return a new state with some modifications.
 
         If any of the options are not None, they will appear in the new state. Otherwise,
@@ -339,7 +348,7 @@ class FreeCellProblem(Problem):
             av_card = self._card_tup(col[-2:])
             av_tab[av_card] = col
             if av_card[0] > 1:
-                 needed_tab[(av_card[0] - 1, av_card[1])] = col
+                needed_tab[(av_card[0] - 1, av_card[1])] = col
 
         rtn = []
 
