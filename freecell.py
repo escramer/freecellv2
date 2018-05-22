@@ -9,6 +9,7 @@ from search import Problem, astar, dfs
 
 _MAX_RANK = 13
 _MAX_COLS = 8
+_MAX_FREE_CELLS = 4
 
 
 class FreeCellProblem(Problem):
@@ -237,6 +238,15 @@ class FreeCellProblem(Problem):
         else:
             return None
 
+    def _remove_from_home(self, state, card):
+        """Return a tuple of the 4 home cells as a result of removing this card.
+
+        :param card: a (rank, suit) tuple (both integers)
+        :type card: tuple
+        """
+        home = list(state[:4])
+        home[card[1]] -= 1
+        return tuple(home)
 
     def _to_tab(self, tab, needed_tab, card):
         """Return a list of tableaus resulting from putting this card in the tableau
@@ -331,8 +341,59 @@ class FreeCellProblem(Problem):
             if av_card[0] > 1:
                  needed_tab[(av_card[0] - 1, av_card[1])] = col
 
-        return [] #TODO
+        rtn = []
 
+        ### From free
+        for card in free:
+            new_free = None
+            # To tab
+            new_tabs = self._to_tab(state[5], needed_tab, card)
+            if new_tabs:
+                card_str = self._card_str(card)
+                new_free = self._remove_card_from_free(state[4], card_str)
+                for new_tab in new_tabs:
+                    rtn.append(self._new_state(state, free=new_free, tab=new_tab))
+
+            # To home
+            new_home = self._to_home(state, needed_home, card)
+            if new_home is not None:
+                if new_free is None:
+                    new_free = self._remove_card_from_free(state[4], card_str)
+                rtn.append(self._new_state(state, home=new_home, free=new_free))
+
+        ### From tab
+        # To tab
+        for new_tab in self._within_tab(state[5], needed_tab, av_tab):
+            rtn.append(self._new_state(state, tab=new_tab))
+        # To free
+        if len(state[4]) < _MAX_FREE_CELLS:
+            for card, col in av_tab.iteritems():
+                card_str = self._card_str(card)
+                new_free = self._add_card_to_free(state[4], card_str)
+                new_tab = frozenset(self._remove_card_from_col(state[5], col))
+                rtn.append(self._new_state(state, free=new_free, tab=new_tab))
+        # To home
+        for card, col in av_tab.iteritems():
+            new_home = self._to_home(state, needed_home, card)
+            if new_home is not None:
+                new_tab = frozenset(self._remove_card_from_col(state[5], col))
+                rtn.append(self._new_state(state, home=new_home, tab=new_tab))
+
+        ### From home
+        for card in av_home:
+            new_home = None
+            # To free
+            if len(state[4]) < _MAX_FREE_CELLS:
+                card_str = self._card_str(card)
+                new_free = self._add_card_to_free(state[4], card_str)
+                new_home = self._remove_from_home(state, card)
+                rtn.append(self._new_state(state, home=new_home, free=new_free))
+            # To tab
+            for new_tab in self._to_tab(state[5], needed_tab, card):
+                new_home = self._remove_from_home(state, card) if new_home is None else new_home
+                rtn.append(self._new_state(state, home=new_home, tab=new_tab))
+
+        return rtn
 
     def move_description(self, from_state, to_state):
         """Return a string describing the transition between the two states.
