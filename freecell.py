@@ -400,7 +400,33 @@ class FreeCellProblem(Problem):
 
         e.g. 'Move 3H home'.
         """
-        return '' #TODO        
+        # Check free cells
+        added_free_cells = to_state[4] - from_state[4]
+        if added_free_cells:
+            for card in added_free_cells:
+                return 'Move %s to a free cell.' % card
+
+        # Check home cells
+        for ndx in xrange(4):
+            if to_state[ndx] > from_state[ndx]:
+                card_str = self._card_str((to_state[ndx], ndx))
+                return 'Move %s to its home cell.' % card_str
+
+        # Check tableau
+        to_tab = to_state[5]
+        from_tab =  from_state[5]
+        if len(to_tab) == len(from_tab):
+            for from_col in from_tab:
+                for to_col in to_tab:
+                    if to_col.startswith(from_col):
+                        return 'Move %s on top of %s.' % (to_col[-2:], to_col[-4:-2])
+        else:
+            for from_col in from_tab:
+                for to_col in to_tab:
+                    if from_col.startswith(to_col):
+                        return 'Move %s to a new column.' % from_col[-2:]
+
+        raise ValueError('Unable to find the right move')      
 
 
 def main():
