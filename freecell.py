@@ -10,6 +10,7 @@ from search import Problem, astar, dfs
 _MAX_RANK = 13
 _MAX_COLS = 8
 _MAX_FREE_CELLS = 4
+_DECK_SIZE = 52
 
 
 class FreeCellProblem(Problem):
@@ -435,7 +436,12 @@ class FreeCellProblem(Problem):
                     if from_col.startswith(to_col):
                         return 'Move %s to a new column.' % from_col[-2:]
 
-        raise ValueError('Unable to find the right move')      
+        raise ValueError('Unable to find the right move')
+
+
+def heuristic(state):
+    """Return the heuristic."""
+    return _DECK_SIZE - sum(state[:4])
 
 
 def main():
@@ -453,7 +459,7 @@ TD,JC,2H
     args = parser.parse_args()
 
     problem = FreeCellProblem(args.filename)
-    for move in dfs(problem): # Later, change to astar
+    for move in astar(problem, hearistic):
         print move
 
 
