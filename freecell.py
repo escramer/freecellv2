@@ -491,9 +491,9 @@ def heuristic(state):
             rank = self._int_rank(col[ndx])
             suit = col[ndx+1]
             if min_cards[suit] < rank:
-                rtn += 1
-            else:
                 rtn += 2
+            else:
+                rtn += 1
                 min_cards[suit] = rank
     return rtn
 
@@ -513,7 +513,7 @@ TD,JC,2H
     args = parser.parse_args()
 
     problem = FreeCellProblem(args.filename)
-    for move in astar(problem, hearistic):
+    for move in astar(problem, heuristic):
         print move
 
 
