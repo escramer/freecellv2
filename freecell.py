@@ -67,7 +67,7 @@ class FreeCellProblem(Problem):
         self._rank_lst = (None, 'A', '2', '3', '4', '5', '6', '7', '8', '9', 'T', 'J', 'Q', 'K')
         self._suit_lst = ('D', 'H', 'C', 'S')
         self._suit_map = {suit_str: ndx for ndx, suit_str in enumerate(self._suit_lst)}
-        self._red_suits = (self._is_red(suit) for suit in self._suit_lst)
+        self._red_suits = tuple(self._is_red(suit) for suit in self._suit_lst)
                 
     @staticmethod
     def _deck():
@@ -112,7 +112,7 @@ class FreeCellProblem(Problem):
         :param card_tup: a (rank, suit) tuple (both integers)
         :type card_tup: tuple
         """
-        return '%s%s' % (self._int_rank(card_tup[0]), self._suit_lst[card_tup[1]])
+        return '%s%s' % (self._rank_lst[card_tup[0]], self._suit_lst[card_tup[1]])
 
     def initial_state(self):
         """Return the initial state."""
