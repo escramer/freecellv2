@@ -4,6 +4,7 @@
 
 import argparse
 import csv
+import logging
 
 from search import Problem, astar, dfs
 
@@ -529,6 +530,8 @@ TD,JC,2H
     parser.add_argument('filename', help=help_text)
     args = parser.parse_args()
 
+    logging.basicConfig(level=logging.INFO)
+    logging.info('Starting')
     problem = FreeCellProblem(args.filename)
     for move in astar(problem, heuristic):
         print move

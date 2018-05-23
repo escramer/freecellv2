@@ -5,6 +5,8 @@ See https://en.wikipedia.org/wiki/A*_search_algorithm
 
 from collections import deque
 from heapq import heappush, heappop
+import logging
+from time import time
 
 _INFINITY = float('inf')
 
@@ -25,6 +27,10 @@ class _OpenSet(object):
 
     def empty(self):
         """Return whether or not this open set is empty."""
+        raise NotImplementedError
+
+    def __len__(self):
+        """Return the length of this open set."""
         raise NotImplementedError
 
 
@@ -48,6 +54,10 @@ class _Stack(_OpenSet):
         """Return whether or not this stack is empty."""
         return len(self._stack) == 0
 
+    def __len__(self):
+        """Return the length."""
+        return len(self._stack)
+
 
 class _Queue(_OpenSet):
     """A queue"""
@@ -68,6 +78,10 @@ class _Queue(_OpenSet):
     def empty(self):
         """Return whether or not this queue is empty."""
         return len(self._queue) == 0
+
+    def __len__(self):
+        """Return the length."""
+        return len(self._queue)
 
 
 class _PriorityQueue(_OpenSet):
@@ -109,6 +123,10 @@ class _PriorityQueue(_OpenSet):
     def empty(self):
         """Return whether or not the priority queue is empty."""
         return len(self._heap) == 0
+
+    def __len__(self):
+        """Return the length."""
+        return len(self._heap)
 
 
 class Problem(object):
@@ -169,12 +187,19 @@ def _search(problem, open_set):
 
     This may raise a NoSolutionError.
     """
+    logging.info('Starting search')
     closed = set()
     came_from = {}
     open_set.push(problem.initial_state())
+    last_time = int(time())
     while not open_set.empty():
+        new_time = int(time())
+        if new_time > last_time:
+            logging.info('Open set size: %s' % len(open_set))
+            last_time = new_time
         current = open_set.pop()
         if problem.is_goal(current):
+            logging.info('Found solution')
             return _reconstruct_path(current, came_from, problem)
         closed.add(current)
         for neighbor in problem.neighbors(current):
