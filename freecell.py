@@ -363,6 +363,8 @@ class FreeCellProblem(Problem):
         free = {self._card_tup(card) for card in state[4]}
 
         # Available and needed tableau cards
+        #TODO: needed_tab cannot map (rank, is_red) to its pile cuz there could be more
+        # than one column needing the same type of card
         av_tab = {} # Maps a card to its pile
         needed_tab = {} # Maps a needed (rank, is_red) tuple to its pile
         for col in state[5]:
