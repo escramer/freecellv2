@@ -97,7 +97,7 @@ class _PriorityQueue(_OpenSet):
                 return False
 
         self._g_score[state] = g_score
-        heappush((g_score + self._heuristic(state), state))
+        heappush(self._heap, (g_score + self._heuristic(state), state))
 
 
     def pop(self):
