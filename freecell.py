@@ -104,7 +104,7 @@ class FreeCellProblem(Problem):
         self._init_state = (0, 0, 0, 0, frozenset(), frozenset(tableau))
         self._suit_lst = ('D', 'H', 'C', 'S')
         self._suit_map = {suit_str: ndx for ndx, suit_str in enumerate(self._suit_lst)}
-        self._red_suits = tuple(self._is_red(suit) for suit in self._suit_lst)
+        self._red_suits = tuple(Card.is_red(suit) for suit in self._suit_lst)
 
     def _is_red(self, suit):
         """Return whether or not the suit is red.
