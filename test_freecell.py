@@ -22,16 +22,61 @@ class TestCard:
 
 class TestFreeCellProblem:
 
+    prob = FreeCellProblem('init_state.csv')
+
     def test_init(self):
         """Test the __init__ method."""
-        prob = FreeCellProblem('init_state.csv')
-        assert prob.initial_state() == (0, 0, 0, 0, frozenset([]), frozenset(['5S7D5DJHQC4H', '2H9SJS6HKSTCTS', 'KC5H2DAC8HQD9D', '2SAH2CQS4C7S', '4S8D3HTDTH8C3S', 'JC5CKHQH9H6C7H', 'ADKD8S6D6SAS', '3D4D3C7C9CJD']))
+        assert self.prob.initial_state() == (0, 0, 0, 0, frozenset([]), frozenset(['5S7D5DJHQC4H', '2H9SJS6HKSTCTS', 'KC5H2DAC8HQD9D', '2SAH2CQS4C7S', '4S8D3HTDTH8C3S', 'JC5CKHQH9H6C7H', 'ADKD8S6D6SAS', '3D4D3C7C9CJD']))
 
         with pytest.raises(ValueError):
             FreeCellProblem('bad_state.csv')
 
     def test_is_red(self):
-        prob = FreeCellProblem('init_state.csv')
-        assert prob._is_red('H')
-        assert prob._is_red(0)
-        
+        assert self.prob._is_red('H')
+        assert self.prob._is_red(0)
+
+    def test_card_tup(self):
+        assert self.prob._card_tup('3C') == (3, 2)
+
+    def test_card_str(self):
+        assert self.prob._card_str((3, 2)) == '3C'
+
+    def test_is_goal(self):
+        state = (13, 13, 13, 13, frozenset(), frozenset())
+        assert self.prob.is_goal(state)
+        state = (13, 13, 13, 12, frozenset(), frozenset())
+        assert not self.prob.is_goal(state)
+
+    def test_meeets_need(self):
+        assert self.prob._meets_need((3, 2), (3, False))
+        assert not self.prob._meets_need((3, 2), (4, False))
+
+    def test_remove_card_from_col(self):
+        tab = frozenset(['3H6C', '4DKD'])
+        assert self.prob._remove_card_from_col(tab, '4DKD') == {'3H6C', '4D'}
+        tab = frozenset(['3H6C', '4D'])
+        assert self.prob._remove_card_from_col(tab, '4D') == {'3H6C'}
+
+    def test_add_card_to_col(self):
+        tab = frozenset(['3H6C', '4DKD'])
+        assert self.prob._add_card_to_col(tab, '3H6C', '8S') == {'3H6C8S', '4DKD'}
+
+    def test_add_card_to_new_col(self):
+        tab = frozenset(['3H6C'])
+        assert self.prob._add_card_to_new_col(tab, '8S') == {'3H6C', '8S'}
+
+    def test_add_card_to_free(self):
+        assert self.prob._add_card_to_free(frozenset(['8S']), '3D') == frozenset(['8S', '3D'])
+
+    def test_remove_card_from_free(self):
+        assert self.prob._remove_card_from_free(frozenset(['8S', '3D']), '3D') == frozenset(['8S'])
+
+    def test_to_home(self):
+        needed_home = {(3, 2)}
+        state = (13, 13, 2, 13, frozenset(), frozenset())
+        assert self.prob._to_home(state, needed_home, (3, 2)) == (13, 13, 3, 13)
+        assert self.prob._to_home(state, needed_home, (4, 2)) is None
+
+    def test_remove_from_home(self):
+        state = (4, 8, 9, 0, frozenset(), frozenset())
+        assert self.prob._remove_from_home(state, (8, 1)) == (4, 7, 9, 0)
