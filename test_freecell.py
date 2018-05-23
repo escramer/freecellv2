@@ -29,4 +29,9 @@ class TestFreeCellProblem:
 
         with pytest.raises(ValueError):
             FreeCellProblem('bad_state.csv')
-            
+
+    def test_is_red(self):
+        prob = FreeCellProblem('init_state.csv')
+        assert prob._is_red('H')
+        assert prob._is_red(0)
+        
