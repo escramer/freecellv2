@@ -375,6 +375,7 @@ class FreeCellProblem(Problem):
         ### From free
         for card in free:
             new_free = None
+            card_str = None
             # To tab
             new_tabs = self._to_tab(state[5], needed_tab, card)
             if new_tabs:
@@ -387,6 +388,7 @@ class FreeCellProblem(Problem):
             new_home = self._to_home(state, needed_home, card)
             if new_home is not None:
                 if new_free is None:
+                    card_str = self._card_str(card) if card_str is None else card_str
                     new_free = self._remove_card_from_free(state[4], card_str)
                 rtn.append(self._new_state(state, home=new_home, free=new_free))
 
