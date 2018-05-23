@@ -1,3 +1,5 @@
+import pytest
+
 from freecell import Card, FreeCellProblem
 
 class TestCard:
@@ -24,4 +26,7 @@ class TestFreeCellProblem:
         """Test the __init__ method."""
         prob = FreeCellProblem('init_state.csv')
         assert prob.initial_state() == (0, 0, 0, 0, frozenset([]), frozenset(['5S7D5DJHQC4H', '2H9SJS6HKSTCTS', 'KC5H2DAC8HQD9D', '2SAH2CQS4C7S', '4S8D3HTDTH8C3S', 'JC5CKHQH9H6C7H', 'ADKD8S6D6SAS', '3D4D3C7C9CJD']))
-        
+
+        with pytest.raises(ValueError):
+            FreeCellProblem('bad_state.csv')
+            
