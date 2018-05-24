@@ -194,7 +194,7 @@ def _search(problem, open_set):
     last_time = int(time())
     while not open_set.empty():
         new_time = int(time())
-        if new_time > last_time:
+        if new_time >= last_time + 10:
             logging.info('Open set size: %s' % len(open_set))
             last_time = new_time
         current = open_set.pop()
