@@ -106,3 +106,7 @@ class TestFreeCellProblem:
         }
         assert self.prob._to_tab(tab, needed_tab, (2, 0)) == []
 
+    def test_card_type(self):
+        assert self.prob._card_type((5, 2)) == (5, False)
+
+
