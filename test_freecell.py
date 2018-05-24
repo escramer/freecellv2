@@ -129,4 +129,19 @@ class TestFreeCellProblem:
             frozenset(['AC', 'AS', 'AD', 'AH', '3H6C', 'KD8C7H', 'JDTD'])
         }
 
+    def test_new_state(self):
+        state = (3, 8, 10, 0, frozenset(['3H']), frozenset(['6C8C', '9S3C']))
+        assert self.prob._new_state(state) == state
+
+        assert self.prob._new_state(state, free=frozenset()) == \
+         (3, 8, 10, 0, frozenset(), frozenset(['6C8C', '9S3C']))
+
+    def test_av_home(self):
+        state = (3, 8, 10, 0, frozenset(), frozenset())
+        assert self.prob._av_home(state) == {(3, 0), (8, 1), (10, 2)}
+
+    def test_needed_home(self):
+        state = (3, 8, 13, 0, frozenset(), frozenset())
+        assert self.prob._needed_home(state) == {(4, 0), (9, 1), (1, 3)}
+
 
