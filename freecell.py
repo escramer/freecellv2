@@ -318,15 +318,15 @@ class FreeCellProblem(Problem):
         rtn = []
         for av_card, from_col in av_tab.iteritems():
             av_card_str = self._card_str(av_card)
+            card_type = self._card_type(av_card)
             if len(from_col) > 2 and len(tab) < _MAX_COLS:
                 new_tab = self._remove_card_from_col(tab, from_col)
                 new_tab = self._add_card_to_new_col(new_tab, av_card_str)
                 rtn.append(frozenset(new_tab))
-            for need, to_col in needed_tab.iteritems():
-                if self._meets_need(av_card, need):
-                    new_tab = self._remove_card_from_col(tab, from_col)
-                    new_tab = self._add_card_to_col(new_tab, to_col, av_card_str)
-                    rtn.append(frozenset(new_tab))
+            for to_col in needed_tab.get(card_type, []):
+                new_tab = self._remove_card_from_col(tab, from_col)
+                new_tab = self._add_card_to_col(new_tab, to_col, av_card_str)
+                rtn.append(frozenset(new_tab))
         return rtn
 
     @staticmethod

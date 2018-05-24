@@ -109,4 +109,24 @@ class TestFreeCellProblem:
     def test_card_type(self):
         assert self.prob._card_type((5, 2)) == (5, False)
 
+    def test_within_tab(self):
+        tab = frozenset(['3H6C', '6S'])
+        av_tab = self.prob._av_tab(tab)
+        needed_tab = self.prob._needed_tab(av_tab)
+        assert self.prob._within_tab(tab, needed_tab, av_tab) == [frozenset(['3H', '6S', '6C'])]
+
+        tab = frozenset(['AC', 'AS', 'AD', 'AH', '3C', '3S', '3D', '3H'])
+        av_tab = self.prob._av_tab(tab)
+        needed_tab = self.prob._needed_tab(av_tab)
+        assert self.prob._within_tab(tab, needed_tab, av_tab) == []
+
+        tab = frozenset(['AC', 'AS', 'AD', 'AH', '3H6C', '7H', 'KD8C', 'JDTD'])
+        av_tab = self.prob._av_tab(tab)
+        needed_tab = self.prob._needed_tab(av_tab)
+        result = self.prob._within_tab(tab, needed_tab, av_tab)
+        assert isinstance(result, list) and set(result) == {
+            frozenset(['AC', 'AS', 'AD', 'AH', '3H', '7H6C', 'KD8C', 'JDTD']),
+            frozenset(['AC', 'AS', 'AD', 'AH', '3H6C', 'KD8C7H', 'JDTD'])
+        }
+
 
