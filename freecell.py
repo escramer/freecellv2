@@ -343,35 +343,66 @@ class FreeCellProblem(Problem):
             tab = state[5]
         return home + (free, tab)
 
-    def neighbors(self, state):
-        """Return a list of states that can be reached from this state."""
-        # Available home cells
-        av_home = set()
+    def _av_home(self, state):
+        """Return the set of available home cells."""
+        rtn = set()
         for suit_ndx in xrange(4):
             rank = state[suit_ndx]
             if rank > 0:
-                av_home.add((rank, suit_ndx))
+                rtn.add((rank, suit_ndx))
+        return rtn
 
-        # Needed home_cells
-        needed_home = set()
+    def _needed_home(self, state):
+        """Return the set of needed cards to go home."""
+        rtn = set()
         for suit in xrange(4):
             rank = state[suit]
             if rank < _MAX_RANK:
-                needed_home.add((rank+1, suit))
+                rtn.add((rank+1, suit))
+        return rtn
+
+    def _av_tab(self, tab):
+        """Return the available cards in the tableau.
+
+        :param tab: the tableau
+        :type tab: frozenset
+
+        More specifically, this returns a dictionary mapping a card tuple to its column.
+        """
+        rtn = {}
+        for col in tab:
+            av_card = self._card_tup(col[-2:])
+            rtn[av_card] = col
+        return rtn
+
+    def _needed_tab(self, av_tab):
+        """Return the cards that are needed in the tableau.
+
+        :param av_tab: the available cards in the tableau (from self._av_tab)
+        :type av_tab: dict
+
+        More specifically, return a dictionary mapping a (rank, is_red) tuple to a list of columns.
+        """
+        rtn = {}
+        for (rank, suit), col in av_tab.iteritems():
+            if rank > 1:
+                needed = (rank-1, not self._is_red(suit))
+                if needed in rtn:
+                    rtn[needed].append(col)
+                else:
+                    rtn[needed] = [col]
+        return rtn
+
+    def neighbors(self, state):
+        """Return a list of states that can be reached from this state."""
+        av_home = self._av_home(state)
+        needed_home = self._needed_home(state)
 
         # Free cells
         free = {self._card_tup(card) for card in state[4]}
 
-        # Available and needed tableau cards
-        #TODO: needed_tab cannot map (rank, is_red) to its pile cuz there could be more
-        # than one column needing the same type of card
-        av_tab = {} # Maps a card to its pile
-        needed_tab = {} # Maps a needed (rank, is_red) tuple to its pile
-        for col in state[5]:
-            av_card = self._card_tup(col[-2:])
-            av_tab[av_card] = col
-            if av_card[0] > 1:
-                needed_tab[(av_card[0] - 1, av_card[1])] = col
+        av_tab = self._av_tab(state[5])
+        needed_tab = self._needed_tab(av_tab)
 
         rtn = []
 
