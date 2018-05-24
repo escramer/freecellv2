@@ -24,6 +24,11 @@ class TestFreeCellProblem:
 
     prob = FreeCellProblem('init_state.csv')
 
+    @staticmethod
+    def _equal_no_order(lst1, lst2):
+        """Return whether or not these lists are equal without regards to order."""
+        return isinstance(lst1, list) and isinstance(lst2, list) and set(lst1) == set(lst2)
+
     def test_init(self):
         """Test the __init__ method."""
         assert self.prob.initial_state() == (0, 0, 0, 0, frozenset([]), frozenset(['5S7D5DJHQC4H', '2H9SJS6HKSTCTS', 'KC5H2DAC8HQD9D', '2SAH2CQS4C7S', '4S8D3HTDTH8C3S', 'JC5CKHQH9H6C7H', 'ADKD8S6D6SAS', '3D4D3C7C9CJD']))
@@ -143,5 +148,17 @@ class TestFreeCellProblem:
     def test_needed_home(self):
         state = (3, 8, 13, 0, frozenset(), frozenset())
         assert self.prob._needed_home(state) == {(4, 0), (9, 1), (1, 3)}
+
+    def test_av_tab(self):
+        tab = frozenset(['3H6C', '6S'])
+        assert self.prob._av_tab(tab) == {(6, 2): '3H6C', (6, 3): '6S'}
+
+    def test_needed_tab(self):
+        av_tab = {(1, 1): '4HAH', (9, 2): '4D9C', (13, 0): 'KD', (13, 1): 'KH'}
+        result = self.prob._needed_tab(av_tab)
+        assert isinstance(result, dict)
+        assert set(result) == {(8, True), (12, False)}
+        assert result[(8, True)] == ['4D9C']
+        assert self._equal_no_order(result[(12, False)], ['KD', 'KH'])
 
 
