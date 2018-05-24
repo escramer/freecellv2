@@ -80,3 +80,29 @@ class TestFreeCellProblem:
     def test_remove_from_home(self):
         state = (4, 8, 9, 0, frozenset(), frozenset())
         assert self.prob._remove_from_home(state, (8, 1)) == (4, 7, 9, 0)
+
+    def test_to_tab(self):
+        tab = frozenset(['3H6C', '6S', 'TD'])
+        needed_tab = {
+            (5, True): ['3H6C', '6S'],
+            (9, False): ['TD']
+        }
+        result = self.prob._to_tab(tab, needed_tab, (5, 1))
+        assert isinstance(result, list) and set(result) == {
+            frozenset(['3H6C5H', '6S', 'TD']),
+            frozenset(['3H6C', '6S5H', 'TD']),
+            frozenset(['3H6C', '6S', 'TD', '5H'])
+        }
+
+
+        tab = frozenset(['3H', 'AC', '7C', 'JD', '9S', '9D', 'KH', '7S'])
+        needed_tab = {
+            (2, False): ['3H'],
+            (6, True): ['7C', '7S'],
+            (10, False): ['JD'],
+            (8, True): ['9S'],
+            (8, False): ['9D'],
+            (12, False): ['KH']
+        }
+        assert self.prob._to_tab(tab, needed_tab, (2, 0)) == []
+

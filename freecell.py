@@ -279,7 +279,7 @@ class FreeCellProblem(Problem):
 
         :param tab: a tableau
         :type tab: frozenset
-        :param needed_tab: maps a (rank, is_red) tuple (card that's needed) to its column
+        :param needed_tab: maps a (rank, is_red) tuple (card that's needed) to a list of columns
         :type needed_tab: dict
         :param card: a (rank, suit) tuple
         :type card: tuple
@@ -287,12 +287,12 @@ class FreeCellProblem(Problem):
         The new tableaus will be frozensets.
         """
         rtn = []
+        card_type = (card[0], self._is_red(card[1]))
         card_str = self._card_str(card)
         if len(tab) < _MAX_COLS:
             rtn.append(frozenset(self._add_card_to_new_col(tab, card_str)))
-        for need, col in needed_tab.iteritems():
-            if self._meets_need(card, need):
-                rtn.append(frozenset(self._add_card_to_col(tab, col, card_str)))
+        for col in needed_tab.get(card_type, []):
+            rtn.append(frozenset(self._add_card_to_col(tab, col, card_str)))
         return rtn
 
     def _within_tab(self, tab, needed_tab, av_tab):
