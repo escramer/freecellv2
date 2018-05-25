@@ -12,50 +12,33 @@ _MAX_RANK = 13
 _MAX_COLS = 8
 _MAX_FREE_CELLS = 4
 _DECK_SIZE = 52
+_SUIT_LST = ('D', 'H', 'C', 'S')
+_RANK_LST = (None, 'A', '2', '3', '4', '5', '6', '7', '8', '9', 'T', 'J', 'Q', 'K')
 
 
 class Card:
-    """Container for helper functions on cards."""
+    """Represents a card."""
 
-    _rank_lst = (None, 'A', '2', '3', '4', '5', '6', '7', '8', '9', 'T', 'J', 'Q', 'K')
-    _rank_map = {rank_str: ndx for ndx, rank_str in enumerate(_rank_lst) if rank_str is not None}
+    def __init__(self, rank, suit):
+        """Initialize.
 
-    @staticmethod
-    def is_red(suit):
-        """Return whether or not this suit is red.
-
+        :param rank: the rank
+        :type rank: int
         :param suit: the suit
-        :type suit: string
+        :type suit: int
         """
-        return suit in ('D', 'H')
+        self.rank_str = _RANK_LST[rank]
+        self.rank_int = rank
+        self.suit_str = _SUIT_LST[suit]
+        self.suit_int = suit
+        self._str = '%s%s' % (self.rank_str, self.suit_str)
+        self.is_red = self.suit_str in ('D', 'H')
+        self.type = (rank, self.is_red)
+        self.next_type = (rank - 1, not self.is_red) if rank > 1 else None # Next card type in tableau
+        self.tup = (rank, suit)
 
-    @classmethod
-    def int_rank(cls, str_rank):
-        """Return the integer rank of this string.
-
-        :param str_rank: the rank
-        :type str_rank: string
-        """
-        return cls._rank_map[str_rank]
-
-    @classmethod
-    def str_rank(cls, int_rank):
-        """Return the rank as a string.
-
-        :param int_rank: the rank
-        :type int_rank: integer
-        """
-        return cls._rank_lst[int_rank]
-
-    @classmethod
-    def deck(cls):
-        """Return a deck of cards as strings."""
-        rtn = set()
-        for suit in ('D', 'H', 'S', 'C'):
-            for rank in cls._rank_lst[1:]:
-                rtn.add('%s%s' % (rank, suit))
-        return rtn
-
+    def __str__(self):
+        return self._str
 
 
 class FreeCellProblem(Problem):
@@ -84,7 +67,9 @@ class FreeCellProblem(Problem):
         :param filename: the name of the csv file
         :type filename: string
         """
-        deck = Card.deck()
+        self._cards = self._deck()
+        deck = set(str(card) for card in self._cards.itervalues())
+
         tableau = set()
         with open(filename) as file_obj:
             for row in csv.reader(file_obj):
@@ -102,33 +87,22 @@ class FreeCellProblem(Problem):
             raise ValueError('Missing cards: %s' % deck)
 
         self._init_state = (0, 0, 0, 0, frozenset(), frozenset(tableau))
-        self._suit_lst = ('D', 'H', 'C', 'S')
-        self._suit_map = {suit_str: ndx for ndx, suit_str in enumerate(self._suit_lst)}
-        self._red_suits = tuple(Card.is_red(suit) for suit in self._suit_lst)
 
-    def _is_red(self, suit):
-        """Return whether or not the suit is red.
+    @staticmethod
+    def _deck():
+        """Return a deck of cards.
 
-        :param suit: the suit
-        :type suit: string or int
+        More specifically, return a dictionary mapping a string (such as '3H')
+        and its corresponding (rank, suit) tuple (for '3H', this is (3, 1))
+        to its Card.
         """
-        return Card.is_red(suit) if isinstance(suit, str) else self._red_suits[suit]
-
-    def _card_tup(self, card_str):
-        """Return a (rank, suit) tuple (both integers) representing this card.
-
-        :param card_str: a card
-        :type card_str: string
-        """
-        return (Card.int_rank(card_str[0]), self._suit_map[card_str[1]])
-
-    def _card_str(self, card_tup):
-        """Return the card as a string.
-
-        :param card_tup: a (rank, suit) tuple (both integers)
-        :type card_tup: tuple
-        """
-        return '%s%s' % (Card.str_rank(card_tup[0]), self._suit_lst[card_tup[1]])
+        rtn = {}
+        for suit_ndx, suit_str in enumerate(_SUIT_LST):
+            for rank_ndx, rank_str in enumerate(_RANK_LST[1:], start=1):
+                card = Card(rank_ndx, suit_ndx)
+                rtn[str(card)] = card
+                rtn[card.tup] = card
+        return rtn
 
     def initial_state(self):
         """Return the initial state."""
@@ -140,16 +114,6 @@ class FreeCellProblem(Problem):
             if state[suit] != _MAX_RANK:
                 return False
         return True
-
-    def _meets_need(self, card, need):
-        """Return whether or not this card has the matching rank and suit.
-
-        :param card: a (rank, suit) tuple (both integers)
-        :type card: tuple
-        :param need: a (rank, is_red) tuple
-        :type need: tuple
-        """
-        return card[0] == need[0] and self._is_red(card[1]) == need[1]
 
     @staticmethod
     def _remove_card_from_col(tableau, col):
@@ -219,7 +183,7 @@ class FreeCellProblem(Problem):
     def _add_card_to_free(freecells, card):
         """Add this card to a free cell.
 
-        :param freecells: the free cells
+        :param freecells: the free cells (set of strings)
         :type freecells: frozenset
         :param card: a card
         :type card: string
@@ -234,7 +198,7 @@ class FreeCellProblem(Problem):
     def _remove_card_from_free(freecells, card):
         """Remove this card from the free cells.
 
-        :param freecells: the free cells
+        :param freecells: the free cells (set of strings)
         :type freecells: frozenset
         :param card: a card
         :type card: string
@@ -250,10 +214,10 @@ class FreeCellProblem(Problem):
         """Return a tuple of the 4 home cells as a result of adding this card to home.
         If the card cannot be added, return None.
 
-        :param needed_home: a set of cards needed (each card is a (rank, suit) tuple)
+        :param needed_home: a set of Cards needed
         :type needed_home: set
-        :param card: a (rank, suit) tuple (both integers)
-        :type card: tuple
+        :param card: a card
+        :type card: Card
         """
         if card in needed_home:
             home = list(state[:4])
