@@ -354,7 +354,7 @@ class FreeCellProblem(Problem):
         rtn = {}
         for card, col in av_tab.iteritems():
             if card.rank_int > 1:
-                needed = card.type
+                needed = card.next_type
                 if needed in rtn:
                     rtn[needed].append(col)
                 else:
