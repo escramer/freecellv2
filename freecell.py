@@ -67,7 +67,7 @@ class FreeCellProblem(Problem):
         :param filename: the name of the csv file
         :type filename: string
         """
-        self._cards = self._deck()
+        self._cards = self._deck() # Use this to get precomputed Card objects.
         deck = set(str(card) for card in self._cards.itervalues())
 
         tableau = set()
@@ -146,7 +146,7 @@ class FreeCellProblem(Problem):
         :param col: a column
         :type col: string
         :param card: a card
-        :type card: string
+        :type card: Card
 
         This returns the modified tableau. 
         i.e.
@@ -156,7 +156,7 @@ class FreeCellProblem(Problem):
         if isinstance(tableau, frozenset):
             tableau = set(tableau)
         tableau.remove(col)
-        col += card
+        col += str(card)
         tableau.add(col)
         return tableau
 
@@ -167,7 +167,7 @@ class FreeCellProblem(Problem):
         :param tableau: the set of columns
         :type tableau: frozenset or set
         :param card: a card
-        :type card: string
+        :type card: Card
 
         This returns the modified tableau. 
         i.e.
@@ -176,7 +176,7 @@ class FreeCellProblem(Problem):
         """
         if isinstance(tableau, frozenset):
             tableau = set(tableau)
-        tableau.add(card)
+        tableau.add(str(card))
         return tableau
 
     @staticmethod
@@ -186,12 +186,12 @@ class FreeCellProblem(Problem):
         :param freecells: the free cells (set of strings)
         :type freecells: frozenset
         :param card: a card
-        :type card: string
+        :type card: Card
 
         This returns freecells as a new frozenset.
         """
         freecells = set(freecells)
-        freecells.add(card)
+        freecells.add(str(card))
         return frozenset(freecells)
 
     @staticmethod
@@ -201,12 +201,12 @@ class FreeCellProblem(Problem):
         :param freecells: the free cells (set of strings)
         :type freecells: frozenset
         :param card: a card
-        :type card: string
+        :type card: Card
 
         This returns freecells as a new frozenset.
         """
         freecells = set(freecells)
-        freecells.remove(card)
+        freecells.remove(str(card))
         return frozenset(freecells)
 
     @staticmethod
@@ -220,9 +220,9 @@ class FreeCellProblem(Problem):
         :type card: Card
         """
         if card in needed_home:
-            home = list(state[:4])
-            home[card[1]] = card[0]
-            return tuple(home)
+            rtn = list(state[:4])
+            rtn[card.suit_int] = card.rank_int
+            return tuple(rtn)
         else:
             return None
 
@@ -230,11 +230,11 @@ class FreeCellProblem(Problem):
     def _remove_from_home(state, card):
         """Return a tuple of the 4 home cells as a result of removing this card.
 
-        :param card: a (rank, suit) tuple (both integers)
-        :type card: tuple
+        :param card: a card
+        :type card: Card
         """
         home = list(state[:4])
-        home[card[1]] -= 1
+        home[card.suit_int] -= 1
         return tuple(home)
 
     def _to_tab(self, tab, needed_tab, card):
@@ -245,51 +245,39 @@ class FreeCellProblem(Problem):
         :type tab: frozenset
         :param needed_tab: maps a (rank, is_red) tuple (card that's needed) to a list of columns
         :type needed_tab: dict
-        :param card: a (rank, suit) tuple
-        :type card: tuple
+        :param card: a card
+        :type card: Card
 
         The new tableaus will be frozensets.
         """
         rtn = []
-        card_type = self._card_type(card)
-        card_str = self._card_str(card)
         if len(tab) < _MAX_COLS:
-            rtn.append(frozenset(self._add_card_to_new_col(tab, card_str)))
-        for col in needed_tab.get(card_type, []):
-            rtn.append(frozenset(self._add_card_to_col(tab, col, card_str)))
+            rtn.append(frozenset(self._add_card_to_new_col(tab, card)))
+        for col in needed_tab.get(card.type, []):
+            rtn.append(frozenset(self._add_card_to_col(tab, col, card)))
         return rtn
-
-    def _card_type(self, card):
-        """Return the card's type (as a (rank, is_red)) tuple.
-
-        :param card: a (rank, suit) tuple (both integers)
-        :type card: tuple
-        """
-        return (card[0], self._is_red(card[1]))
 
     def _within_tab(self, tab, needed_tab, av_tab):
         """Return a list of tableaus resulting from moving a card within the tableau.
 
         :param tab: a tableau
         :type tab: frozenset
-        :param needed_tab: maps a (rank, is_red) tuple (card that's needed) to its column
+        :param needed_tab: maps a (rank, is_red) tuple (card that's needed) to a list of columns
         :type needed_tab: dict
-        :param av_tab: maps available (rank, suit) tuples to their column
+        :param av_tab: maps a Card to its column
         :type av_tab: dict
 
         The new tableaus will be frozensets.
         """
         rtn = []
         for av_card, from_col in av_tab.iteritems():
-            av_card_str = self._card_str(av_card)
-            card_type = self._card_type(av_card)
             if len(from_col) > 2 and len(tab) < _MAX_COLS:
                 new_tab = self._remove_card_from_col(tab, from_col)
-                new_tab = self._add_card_to_new_col(new_tab, av_card_str)
+                new_tab = self._add_card_to_new_col(new_tab, av_card)
                 rtn.append(frozenset(new_tab))
-            for to_col in needed_tab.get(card_type, []):
+            for to_col in needed_tab.get(av_card.type, []):
                 new_tab = self._remove_card_from_col(tab, from_col)
-                new_tab = self._add_card_to_col(new_tab, to_col, av_card_str)
+                new_tab = self._add_card_to_col(new_tab, to_col, av_card)
                 rtn.append(frozenset(new_tab))
         return rtn
 
@@ -321,7 +309,7 @@ class FreeCellProblem(Problem):
         for suit_ndx in xrange(4):
             rank = state[suit_ndx]
             if rank > 0:
-                rtn.add((rank, suit_ndx))
+                rtn.add(self._cards[(rank, suit_ndx)])
         return rtn
 
     def _needed_home(self, state):
@@ -330,7 +318,7 @@ class FreeCellProblem(Problem):
         for suit in xrange(4):
             rank = state[suit]
             if rank < _MAX_RANK:
-                rtn.add((rank+1, suit))
+                rtn.add(self._cards[(rank+1, suit)])
         return rtn
 
     def _av_tab(self, tab):
@@ -339,13 +327,9 @@ class FreeCellProblem(Problem):
         :param tab: the tableau
         :type tab: frozenset
 
-        More specifically, this returns a dictionary mapping a card tuple to its column.
+        More specifically, this returns a dictionary mapping a Card to its column.
         """
-        rtn = {}
-        for col in tab:
-            av_card = self._card_tup(col[-2:])
-            rtn[av_card] = col
-        return rtn
+        return {self._cards[col[-2:]]: col for col in tab}
 
     def _needed_tab(self, av_tab):
         """Return the cards that are needed in the tableau.
@@ -356,9 +340,9 @@ class FreeCellProblem(Problem):
         More specifically, return a dictionary mapping a (rank, is_red) tuple to a list of columns.
         """
         rtn = {}
-        for (rank, suit), col in av_tab.iteritems():
-            if rank > 1:
-                needed = (rank-1, not self._is_red(suit))
+        for card, col in av_tab.iteritems():
+            if card.rank_int > 1:
+                needed = card.type
                 if needed in rtn:
                     rtn[needed].append(col)
                 else:
@@ -371,7 +355,7 @@ class FreeCellProblem(Problem):
         needed_home = self._needed_home(state)
 
         # Free cells
-        free = {self._card_tup(card) for card in state[4]}
+        free = {self._cards[card] for card in state[4]}
 
         av_tab = self._av_tab(state[5])
         needed_tab = self._needed_tab(av_tab)
@@ -381,12 +365,10 @@ class FreeCellProblem(Problem):
         ### From free
         for card in free:
             new_free = None
-            card_str = None
             # To tab
             new_tabs = self._to_tab(state[5], needed_tab, card)
             if new_tabs:
-                card_str = self._card_str(card)
-                new_free = self._remove_card_from_free(state[4], card_str)
+                new_free = self._remove_card_from_free(state[4], card)
                 for new_tab in new_tabs:
                     rtn.append(self._new_state(state, free=new_free, tab=new_tab))
 
@@ -394,8 +376,7 @@ class FreeCellProblem(Problem):
             new_home = self._to_home(state, needed_home, card)
             if new_home is not None:
                 if new_free is None:
-                    card_str = self._card_str(card) if card_str is None else card_str
-                    new_free = self._remove_card_from_free(state[4], card_str)
+                    new_free = self._remove_card_from_free(state[4], card)
                 rtn.append(self._new_state(state, home=new_home, free=new_free))
 
         ### From tab
@@ -405,8 +386,7 @@ class FreeCellProblem(Problem):
         # To free
         if len(state[4]) < _MAX_FREE_CELLS:
             for card, col in av_tab.iteritems():
-                card_str = self._card_str(card)
-                new_free = self._add_card_to_free(state[4], card_str)
+                new_free = self._add_card_to_free(state[4], card)
                 new_tab = frozenset(self._remove_card_from_col(state[5], col))
                 rtn.append(self._new_state(state, free=new_free, tab=new_tab))
         # To home
@@ -421,8 +401,7 @@ class FreeCellProblem(Problem):
             new_home = None
             # To free
             if len(state[4]) < _MAX_FREE_CELLS:
-                card_str = self._card_str(card)
-                new_free = self._add_card_to_free(state[4], card_str)
+                new_free = self._add_card_to_free(state[4], card)
                 new_home = self._remove_from_home(state, card)
                 rtn.append(self._new_state(state, home=new_home, free=new_free))
             # To tab
