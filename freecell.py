@@ -421,7 +421,7 @@ class FreeCellProblem(Problem):
                 new_home = self._remove_from_home(state, card) if new_home is None else new_home
                 rtn.append(self._new_state(state, home=new_home, tab=new_tab))
 
-        return rtn
+        return [(new_state, 1) for new_state in rtn] # Place holder for now
 
     def move_description(self, from_state, to_state):
         """Return a string describing the transition between the two states.
