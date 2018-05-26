@@ -514,7 +514,7 @@ TD,JC,2H
     parser.add_argument('filename', help=help_text)
     args = parser.parse_args()
 
-    logging.basicConfig(level=logging.INFO)
+    logging.basicConfig(level=logging.INFO, format='%(asctime)s: %(message)s')
     logging.info('Starting')
     problem = FreeCellProblem(args.filename)
     for move in astar(problem, heuristic):
