@@ -342,7 +342,8 @@ class FreeCellProblem(Problem):
         """
         return {self._cards[col[-2:]]: col for col in tab}
 
-    def _needed_tab(self, av_tab):
+    @staticmethod
+    def _needed_tab(av_tab):
         """Return the cards that are needed in the tableau.
 
         :param av_tab: the available cards in the tableau (from self._av_tab)
