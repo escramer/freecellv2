@@ -16,7 +16,7 @@ _SUIT_LST = ('D', 'H', 'C', 'S')
 _RANK_LST = (None, 'A', '2', '3', '4', '5', '6', '7', '8', '9', 'T', 'J', 'Q', 'K')
 
 
-class Card:
+class Card(object):
     """Represents a card."""
 
     _rank_map = {rank_str: rank_int for rank_int, rank_str in enumerate(_RANK_LST) if rank_str is not None}
