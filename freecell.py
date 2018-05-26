@@ -108,8 +108,8 @@ class FreeCellProblem(Problem):
         to its Card.
         """
         rtn = {}
-        for suit_ndx, suit_str in enumerate(_SUIT_LST):
-            for rank_ndx, rank_str in enumerate(_RANK_LST[1:], start=1):
+        for suit_ndx in xrange(4):
+            for rank_ndx in xrange(1, _MAX_RANK):
                 card = Card(rank_ndx, suit_ndx)
                 rtn[str(card)] = card
                 rtn[card.tup] = card
