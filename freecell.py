@@ -109,7 +109,7 @@ class FreeCellProblem(Problem):
         """
         rtn = {}
         for suit_ndx in xrange(4):
-            for rank_ndx in xrange(1, _MAX_RANK):
+            for rank_ndx in xrange(1, _MAX_RANK+1):
                 card = Card(rank_ndx, suit_ndx)
                 rtn[str(card)] = card
                 rtn[card.tup] = card
