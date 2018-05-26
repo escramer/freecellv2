@@ -14,10 +14,13 @@ _INFINITY = float('inf')
 class _OpenSet(object):
     """An object for pushing on states and popping them off."""
 
-    def push(self, state):
+    def push(self, state, cost):
         """Put this state in this open set if possible.
 
         This will return whether or not the state can be pushed.
+
+        :param cost: the cost to go from the parent state to this state
+        :type cost: integer
         """
         raise NotImplementedError
 
@@ -41,7 +44,7 @@ class _Stack(_OpenSet):
         """Initialize."""
         self._stack = []
 
-    def push(self, state):
+    def push(self, state, _):
         """Put the state in this stack."""
         self._stack.append(state)
         return True
@@ -66,7 +69,7 @@ class _Queue(_OpenSet):
         """Initialize."""
         self._queue = deque()
 
-    def push(self, state):
+    def push(self, state, _):
         """Put this state in this queue."""
         self._queue.append(state)
         return True
@@ -98,15 +101,18 @@ class _PriorityQueue(_OpenSet):
         self._g_score = {}
         self._last_g_score = None # g score of the last state returned from pop
 
-    def push(self, state):
+    def push(self, state, cost):
         """Put this state in this priority queue. Return whether or not it can push.
+
+        :param cost: the cost to go from the parent state to this state
+        :type cost: integer
 
         Its parent is assumed to be the last state returned from pop.
         """
         if self._last_g_score is None:
             g_score = 0
         else:
-            g_score = self._last_g_score + 1
+            g_score = self._last_g_score + cost
             if g_score >= self._g_score.get(state, _INFINITY):
                 return False
 
@@ -144,7 +150,7 @@ class Problem(object):
         raise NotImplementedError
 
     def neighbors(self, state):
-        """Return a list of states that can be reached from this state."""
+        """Return a list of (state, cost) tuples that can be reached from this state."""
         raise NotImplementedError
 
     def move_description(self, from_state, to_state):
@@ -191,7 +197,7 @@ def _search(problem, open_set):
     logging.info('Starting search')
     closed = set()
     came_from = {}
-    open_set.push(problem.initial_state())
+    open_set.push(problem.initial_state(), 0)
     last_time = int(time())
     while not open_set.empty():
         new_time = int(time())
@@ -203,10 +209,10 @@ def _search(problem, open_set):
             logging.info('Found solution')
             return _reconstruct_path(current, came_from, problem)
         closed.add(current)
-        for neighbor in problem.neighbors(current):
+        for neighbor, cost in problem.neighbors(current):
             if neighbor in closed:
                 continue
-            if open_set.push(neighbor):
+            if open_set.push(neighbor, cost):
                 came_from[neighbor] = current
 
     raise NoSolutionError
