@@ -19,6 +19,8 @@ _RANK_LST = (None, 'A', '2', '3', '4', '5', '6', '7', '8', '9', 'T', 'J', 'Q', '
 class Card:
     """Represents a card."""
 
+    _rank_map = {rank_str: rank_int for rank_int, rank_str in enumerate(_RANK_LST) if rank_str is not None}
+
     def __init__(self, rank, suit):
         """Initialize.
 
@@ -39,6 +41,15 @@ class Card:
 
     def __str__(self):
         return self._str
+
+    @classmethod
+    def get_rank_int(cls, rank_str):
+        """Return the integer rank for this rank string.
+
+        :param rank_str: a rank
+        :type rank_str: string
+        """
+        return cls._rank_map[rank_str]
 
 
 class FreeCellProblem(Problem):
@@ -456,7 +467,7 @@ class FreeCellProblem(Problem):
             if home_rank == 0:
                 row += '  '
             else:
-                row += self._card_str((home_rank, ndx))
+                row += self._cards[(home_rank, ndx)]
             row += '|'
         print row
 
@@ -487,7 +498,7 @@ def heuristic(state):
     for col in state[5]:
         min_cards = {suit: _MAX_RANK for suit in ['S', 'C', 'D', 'H']}
         for ndx in xrange(0, len(col), 2):
-            rank = Card.int_rank(col[ndx])
+            rank = Card.get_rank_int(col[ndx])
             suit = col[ndx+1]
             if min_cards[suit] < rank:
                 rtn += 2
