@@ -105,10 +105,10 @@ class FreeCellProblem(Problem):
         self._opp_color = [] # self._opp_color[i] is the set of suits opposite in color from i
         self._sibling_suit = [] # self._sibling_suit[i] is the other suit of the same color as i
         for suit in xrange(4):
-            is_red = self._is_red[suit]
+            is_red_ = self._is_red[suit]
             opp_colors = set()
             for other_suit in xrange(4):
-                if self._is_red[other_suit] != is_red:
+                if self._is_red[other_suit] != is_red_:
                     opp_colors.add(other_suit)
                 elif other_suit != suit:
                     self._sibling_suit.append(other_suit)
