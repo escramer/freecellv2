@@ -34,7 +34,7 @@ class Card(object):
         self.suit_str = _SUIT_LST[suit]
         self.suit_int = suit
         self._str = '%s%s' % (self.rank_str, self.suit_str)
-        self.is_red = self.suit_str in ('D', 'H')
+        self.is_red = is_red(self.suit_str)
         self.type = (rank, self.is_red)
         self.next_type = (rank - 1, not self.is_red) if rank > 1 else None # Next card type in tableau
         self.tup = (rank, suit)
@@ -50,6 +50,18 @@ class Card(object):
         :type rank_str: string
         """
         return cls._rank_map[rank_str]
+
+
+def is_red(suit):
+    """Return whether or not this suit is red.
+
+    :param suit: a suit
+    :type suit: string or int
+    """
+    if isinstance(suit, str):
+        return suit in ('D', 'H')
+    else:
+        return _SUIT_LST[suit] in ('D', 'H')
 
 
 class FreeCellProblem(Problem):
@@ -89,7 +101,7 @@ class FreeCellProblem(Problem):
                 self._next_in_rank[card] = self._cards[(new_rank, suit)]
 
         # Suit color
-        self._is_red = [Card.is_red(suit) for suit in _SUIT_LST]
+        self._is_red = [is_red(suit) for suit in _SUIT_LST]
         self._opp_color = [] # self._opp_color[i] is the set of suits opposite in color from i
         self._sibling_suit = [] # self._sibling_suit[i] is the other suit of the same color as i
         for suit in xrange(4):
