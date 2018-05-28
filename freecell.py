@@ -586,9 +586,17 @@ class FreeCellProblem(Problem):
                 return 'Move %s to a free cell.' % card
 
         ## Check home cells
-        for ndx in xrange(4):
-            if to_state[ndx] > from_state[ndx]:
-                return 'Move %s to its home cell.' % self._cards[(to_state[ndx], ndx)]
+        to_home_cards = []
+        for suit_int in xrange(4):
+            for rank_int in xrange(from_state[suit_int]+1, to_state[suit_int]+1):
+                to_home_cards.append(str(self._cards[(rank_int, suit_int)]))
+        if to_home_cards:
+            if len(to_home_cards) == 1:
+                return 'Move %s to its home cell.' % to_home_cards[0]
+            elif len(to_home_cards) == 2:
+                return 'Move %s and %s to their home cells.' % tuple(to_home_cards)
+            else:
+                return 'Move %s, and %s to their home cells.' % (', '.join(to_home_cards[:-1]), to_home_cards[-1])
 
         ## Check tableau
         to_tab = to_state[5]
