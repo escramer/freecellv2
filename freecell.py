@@ -491,7 +491,10 @@ class FreeCellProblem(Problem):
             if delta_cost == 0:
                 if cost == 0:
                     return None
-                return self._new_state(state, home=tuple(home), free=frozenset(str(card) for card in free), tab=frozenset(tab)), cost
+                return self._new_state(
+                    state, home=tuple(home), free=frozenset(str(card) for card in free), 
+                    tab=frozenset(tab)
+                ), cost
 
             cost += delta_cost
 
