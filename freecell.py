@@ -79,8 +79,30 @@ class FreeCellProblem(Problem):
         :type filename: string
         """
         self._cards = self._deck() # Use this to get precomputed Card objects.
-        deck = set(str(card) for card in self._cards.itervalues())
 
+        # Get each card's next card in rank
+        self._next_in_rank = {}
+        for card in self._cards.itervalues():
+            if card.rank_int != _MAX_RANK:
+                new_rank = card.rank_int + 1
+                suit = card.suit_int
+                self._next_in_rank[card] = self._cards[(new_rank, suit)]
+
+        # Suit color
+        self._is_red = [Card.is_red(suit) for suit in _SUIT_LST]
+        self._opp_color = [] # self._opp_color[i] is the set of suits opposite in color from i
+        self._sibling_suit = [] # self._sibling_suit[i] is the other suit of the same color as i
+        for suit in xrange(4):
+            is_red = self._is_red[suit]
+            opp_colors = set()
+            for other_suit in xrange(4):
+                if self._is_red[other_suit] != is_red:
+                    opp_colors.add(other_suit)
+                elif other_suit != suit:
+                    self._sibling_suit.append(other_suit)
+            self._opp_color.append(opp_colors)
+
+        deck = set(str(card) for card in self._cards.itervalues())
         tableau = set()
         with open(filename) as file_obj:
             for row in csv.reader(file_obj):
@@ -361,18 +383,132 @@ class FreeCellProblem(Problem):
                     rtn[needed] = [col]
         return rtn
 
+    def _automatic_cards(self, state, cards):
+        """Return a new set of cards that can be moved home automatically.
+
+        :param state: a tuple or list where the first four elements are the ranks of the home cells
+        :type state: tuple or list
+        :param cards: Cards to test
+        :type cards: set
+
+        A card can be automatically moved to its home cell if one of the following is true:
+        - the card is an Ace
+        - the card is a 2 and the Ace of the same suit is home
+        - the card is a 3, the 2's of opposite color are home, and the 2 of the
+          same suit is home
+        - the card is 4 or higher, the card of one less rank and same suit is home,
+          and all cards that could be attached to the card in a column are home
+          (e.g. for 6H, we need 5H, 5S, 5C, and 4D to be home)
+
+        Idea taken from http://www.idiotsdelight.net/freecell-help.html
+
+        Assume these cards can be moved home.
+        """
+        rtn = set()
+        for card in cards:
+            rank = card.rank_int
+            if rank <= 2:
+                rtn.add(card)
+            else:
+                prev_rank = rank - 1 # Could be precomputed
+                opp_suits_home = True
+                suit = card.suit_int
+                for opp_color_suit in self._opp_color[suit]:
+                    if state[opp_color_suit] < prev_rank:
+                        opp_suits_home = False
+                        break
+                if opp_suits_home and (rank == 3 or state[self._sibling_suit[suit]] >= rank - 2):
+                    # rank-2 could be precomputed 
+                    rtn.add(card)
+
+        return rtn
+
+    def _move_home(self, card, needed_home, home):
+        """Move this card home.
+
+        :param card: a card
+        :type card: Card
+        :param needed_home: Cards needed home
+        :type needed_home: set
+        :param home: the home cells
+        :type home: list
+
+        Assume the card can be moved home.
+        """
+        home[card.suit_int] += 1
+        needed_home.remove(card)
+        if card.rank_int < _MAX_RANK:
+            needed_home.add(self._next_in_rank[card])
+
+    def _auto_neighbor(self, state, needed_home, free, av_tab):
+        """Return the automatic neighbor and its cost.
+
+        :param needed_home: Cards needed home
+        :type needed_home: set
+        :param free: free cell Cards
+        :type free: set
+        :param av_tab: maps a Card to its column
+        :type av_tab: dict
+
+        For this, keep moving cards to their home cells. If none can be moved,
+        return None.
+
+        A card can be automatically moved to its home cell if one of the following is true:
+        - the card is an Ace
+        - the card is a 2 and the Ace of the same suit is home
+        - the card is a 3, the 2's of opposite color are home, and the 2 of the
+          same suit is home
+        - the card is 4 or higher, the card of one less rank and same suit is home,
+          and all cards that could be attached to the card in a column are home
+          (e.g. for 6H, we need 5H, 5S, 5C, and 4D to be home)
+
+        Idea taken from http://www.idiotsdelight.net/freecell-help.html
+
+        This may modify needed_home, free, and av_tab if there are moves.
+        """
+        cost = 0
+        home = list(state[:4])
+        tab = state[5]
+
+        while True:
+            delta_cost = 0
+            # From free
+            for card in self._automatic_cards(home, free & needed_home):
+                free.remove(card)
+                self._move_home(card, needed_home, home)
+                delta_cost += 1
+
+            # From tab
+            for card in self._automatic_cards(home, set(av_tab) & needed_home):
+                self._move_home(card, needed_home, home)
+                col = av_tab[card]
+                del av_tab[card]
+                tab = self._remove_card_from_col(tab, col)
+                if len(col) > 2:
+                    av_tab[self._cards[col[-4:-2]]] = col[:-2]
+                delta_cost += 1
+
+            if delta_cost == 0:
+                if cost == 0:
+                    return None
+                return self._new_state(state, home=tuple(home), free=frozenset(str(card) for card in free), tab=frozenset(tab)), cost
+
+            cost += delta_cost
+
     def neighbors(self, state):
         """Return a list of states that can be reached from this state."""
-        av_home = self._av_home(state)
+        # Automatic move
         needed_home = self._needed_home(state)
-
-        # Free cells
         free = {self._cards[card] for card in state[4]}
-
         av_tab = self._av_tab(state[5])
+        auto_neighbor = self._auto_neighbor(state, needed_home, free, av_tab)
+        if auto_neighbor is not None:
+            return [auto_neighbor]
+
+        av_home = self._av_home(state)
         needed_tab = self._needed_tab(av_tab)
 
-        rtn = []
+        rtn = [] # List of states only
 
         ### From free
         for card in free:
