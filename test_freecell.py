@@ -2,23 +2,21 @@ import pytest
 
 from freecell import Card, FreeCellProblem
 
-class TestCard:
+def test_card():
     """Test the Card class."""
+    card = Card(1, 2)
+    assert card.rank_str == 'A'
+    assert card.rank_int == 1
+    assert card.suit_str == 'C'
+    assert card.suit_int == 2
+    assert str(card) == 'AC'
+    assert not card.is_red
+    assert card.type == (1, False)
+    assert card.next_type is None
+    assert card.tup == (1, 2)
 
-    def test_is_red(self):
-        assert Card.is_red('D')
-        assert not Card.is_red('S')
-        
-    def test_int_rank(self):
-        assert Card.int_rank('A') == 1
-        assert Card.int_rank('K') == 13
-
-    def test_str_rank(self):
-        assert Card.str_rank(1) == 'A'
-        assert Card.str_rank(13) == 'K'
-
-    def test_deck(self):
-        assert Card.deck() == set(['3S', '2C', '5S', 'TS', '3C', '3H', 'JH', '5H', 'JD', '5D', '5C', '3D', '9H', '7D', '7C', '9C', '9D', 'QS', '7H', '7S', 'TH', 'TD', 'JC', 'TC', 'AC', 'AD', '2S', 'AH', '4S', '2D', 'AS', '4H', '8S', '4D', 'JS', '2H', '9S', 'KC', '8H', '6C', '6D', 'KD', '6H', '8C', '4C', 'KH', '8D', 'KS', 'QC', '6S', 'QD', 'QH'])
+    card = Card(5, 1)
+    assert card.next_type == (4, False)
 
 class TestFreeCellProblem:
 
