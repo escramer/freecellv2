@@ -627,7 +627,7 @@ class FreeCellProblem(Problem):
             if home_rank == 0:
                 row += '  '
             else:
-                row += self._cards[(home_rank, ndx)]
+                row += str(self._cards[(home_rank, ndx)])
             row += '|'
         print row
 
