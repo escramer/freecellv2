@@ -2,6 +2,14 @@
 
 """A Freecell solver"""
 
+# FOR WHEN YOU RETURN TO THIS PROJECT:
+
+# Just recently, I returned the automatic moves in the neighbors method.
+# For next time, you might want to modify the testing code in test_freecell.py
+# to test this module. You might also want to consider prohibiting
+# moves from the home cells because there might not be a need for a
+# card to be moved from there (e.g. no need to move Aces from their home cells).
+
 import argparse
 import csv
 import logging
