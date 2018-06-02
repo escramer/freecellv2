@@ -675,7 +675,7 @@ def main():
 CSV file for a layout of a freecell game. Each row represents a Tableau column. \
 Each card is 2 characters long (e.g. "3H"). You represent 10 with "T" or "t". All \
 letters may be upper or lower case. For order, the card at the end of the row \
-at the top of the column and can be moved. Example (you'll have more cards than this):
+is the top of the column and can be moved. Example (you'll have more cards than this):
 3h,as,4S,KD
 TD,JC,2H
 """
